@@ -11,19 +11,27 @@ class SearchViewController: UIViewController {
     @IBOutlet weak var searchBar: UISearchBar!
     @IBOutlet weak var tableView: UITableView!
     
+    
     var searchResults = [SearchResult]()
     var hasSearched = false
     
-    // Sobrescribe la función viewDidLoad del ViewController
+    struct TableView {
+      struct CellIdentifiers {
+        static let searchResultCell = "SearchResultCell"
+        static let nothingFoundCell = "NothingFoundCell"
+      }
+    }
+    
     override func viewDidLoad() {
-        super.viewDidLoad()
-        
-        // Ajusta el desplazamiento del contenido de la tabla
-        // La propiedad contentInset agrega espacio adicional alrededor del contenido de la tabla
-        tableView.contentInset = UIEdgeInsets(top: 47, left: 0, bottom: 0, right: 0)
-        // El desplazamiento hacia abajo (top) se establece en 47 puntos para dejar espacio para otros elementos
-        // Los otros valores de desplazamiento (left, bottom y right) se mantienen en cero
-        // Esto significa que no hay desplazamiento adicional en esos lados
+      super.viewDidLoad()
+      tableView.contentInset = UIEdgeInsets(top: 47, left: 0, bottom: 0, right: 0)
+      var cellNib = UINib(nibName: TableView.CellIdentifiers.searchResultCell, bundle: nil)
+      tableView.register(cellNib, forCellReuseIdentifier: TableView.CellIdentifiers.searchResultCell)
+      cellNib = UINib(nibName: TableView.CellIdentifiers.nothingFoundCell, bundle: nil)
+      tableView.register(
+        cellNib,
+        forCellReuseIdentifier: TableView.CellIdentifiers.nothingFoundCell)
+      searchBar.becomeFirstResponder()
     }
 }
 
@@ -85,35 +93,32 @@ extension SearchViewController: UITableViewDelegate, UITableViewDataSource {
             return searchResults.count
         }
     }
-
+    
     // Función que configura y devuelve una celda para una fila específica de la tabla
     func tableView(
         _ tableView: UITableView,
         cellForRowAt indexPath: IndexPath
     ) -> UITableViewCell {
-        // Identificador de la celda
-        let cellIdentifier = "SearchResultCell"
-
-        // Obtiene una celda reutilizable o crea una nueva si no hay ninguna disponible
-        var cell: UITableViewCell! = tableView.dequeueReusableCell(
-            withIdentifier: cellIdentifier)
-        if cell == nil {
-            cell = UITableViewCell(
-                style: .subtitle, reuseIdentifier: cellIdentifier)
-        }
-        
-        // Configura el contenido de la celda dependiendo de si se encontraron resultados de búsqueda o no
+        // Verifica si no hay resultados de búsqueda
         if searchResults.count == 0 {
-            cell.textLabel!.text = "(Nothing found)"
-            cell.detailTextLabel!.text = ""
+            // Si no hay resultados, devuelve una celda de "Nothing Found" reutilizable
+            return tableView.dequeueReusableCell(
+                withIdentifier: TableView.CellIdentifiers.nothingFoundCell,
+                for: indexPath)
         } else {
+            // Si hay resultados de búsqueda
+            // Obtiene una celda reutilizable de tipo SearchResultCell
+            let cell = tableView.dequeueReusableCell(
+                withIdentifier: TableView.CellIdentifiers.searchResultCell,
+                for: indexPath) as! SearchResultCell
+            // Obtiene el objeto SearchResult correspondiente a la fila actual
             let searchResult = searchResults[indexPath.row]
-            cell.textLabel!.text = searchResult.name
-            cell.detailTextLabel!.text = searchResult.artistName
+            // Configura las etiquetas de la celda con los datos del SearchResult
+            cell.nameLabel.text = searchResult.name
+            cell.artistNameLabel.text = searchResult.artistName
+            // Devuelve la celda configurada
+            return cell
         }
-        
-        // Devuelve la celda configurada
-        return cell
     }
 
     // Función que se ejecuta cuando se selecciona una fila de la tabla
