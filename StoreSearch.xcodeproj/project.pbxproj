@@ -17,6 +17,7 @@
 		4A0FF7062B6F349700C0908F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4A0FF7052B6F349700C0908F /* Assets.xcassets */; };
 		4A0FF7092B6F349700C0908F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4A0FF7072B6F349700C0908F /* LaunchScreen.storyboard */; };
 		4A0FF7112B6F3F0200C0908F /* SearchResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A0FF7102B6F3F0200C0908F /* SearchResult.swift */; };
+		4A7C80E32C223D48002C27C1 /* LoadingCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4A7C80E22C223D48002C27C1 /* LoadingCell.xib */; };
 		4ACB2F592B898EB700865C2F /* NothingFoundCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4ACB2F582B898EB700865C2F /* NothingFoundCell.xib */; };
 /* End PBXBuildFile section */
 
@@ -33,6 +34,7 @@
 		4A0FF7082B6F349700C0908F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		4A0FF70A2B6F349700C0908F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		4A0FF7102B6F3F0200C0908F /* SearchResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchResult.swift; sourceTree = "<group>"; };
+		4A7C80E22C223D48002C27C1 /* LoadingCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = LoadingCell.xib; sourceTree = "<group>"; };
 		4ACB2F582B898EB700865C2F /* NothingFoundCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = NothingFoundCell.xib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -70,6 +72,7 @@
 				4A0FF6FB2B6F349500C0908F /* SceneDelegate.swift */,
 				4A0FF6FD2B6F349500C0908F /* SearchViewController.swift */,
 				4ACB2F582B898EB700865C2F /* NothingFoundCell.xib */,
+				4A7C80E22C223D48002C27C1 /* LoadingCell.xib */,
 				4A06D1712B898B86001B2A47 /* SearchResultCell.swift */,
 				4A06D16F2B898698001B2A47 /* SearchResultCell.xib */,
 				4A0FF6FF2B6F349500C0908F /* Main.storyboard */,
@@ -142,6 +145,7 @@
 			files = (
 				4A0FF7092B6F349700C0908F /* LaunchScreen.storyboard in Resources */,
 				4A0FF7062B6F349700C0908F /* Assets.xcassets in Resources */,
+				4A7C80E32C223D48002C27C1 /* LoadingCell.xib in Resources */,
 				4A06D1702B898698001B2A47 /* SearchResultCell.xib in Resources */,
 				4ACB2F592B898EB700865C2F /* NothingFoundCell.xib in Resources */,
 				4A0FF7012B6F349500C0908F /* Main.storyboard in Resources */,

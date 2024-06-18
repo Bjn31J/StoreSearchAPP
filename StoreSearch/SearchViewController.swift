@@ -14,6 +14,7 @@ class SearchViewController: UIViewController {
     
     var searchResults = [SearchResult]()
     var hasSearched = false
+    var isLoading = false
     
     // Definición de la estructura TableView
     struct TableView {
@@ -22,6 +23,7 @@ class SearchViewController: UIViewController {
             // Definición de identificadores de celda estáticos para SearchResultCell y NothingFoundCell
             static let searchResultCell = "SearchResultCell"  // Identificador de celda para los resultados de búsqueda
             static let nothingFoundCell = "NothingFoundCell"  // Identificador de celda para mostrar cuando no se encuentran resultados
+            static let loadingCell = "LoadingCell"
         }
     }
 
@@ -40,6 +42,9 @@ class SearchViewController: UIViewController {
         cellNib = UINib(nibName: TableView.CellIdentifiers.nothingFoundCell, bundle: nil)
         tableView.register(cellNib, forCellReuseIdentifier: TableView.CellIdentifiers.nothingFoundCell)
         
+        cellNib = UINib(nibName: TableView.CellIdentifiers.loadingCell,bundle: nil)
+        tableView.register(cellNib, forCellReuseIdentifier: TableView.CellIdentifiers.loadingCell)
+         
         // Hace que el searchBar tenga el foco para que el teclado se muestre automáticamente
         searchBar.becomeFirstResponder()
     }
@@ -47,38 +52,55 @@ class SearchViewController: UIViewController {
 }
 
 // MARK: - Search Bar Delegate
+
+// MARK: - Search Bar Delegate
+// Extensión para SearchViewController que implementa el delegado de UISearchBar.
 extension SearchViewController: UISearchBarDelegate {
-    
-    // Método llamado cuando se hace clic en el botón de búsqueda en la barra de búsqueda
-    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        // Verifica si el texto de búsqueda no está vacío
-        if !searchBar.text!.isEmpty {
-            // Si hay texto de búsqueda, se resigna el primer respondedor (se oculta el teclado)
-            searchBar.resignFirstResponder()
+  // Método que se llama cuando se hace clic en el botón de búsqueda del UISearchBar.
+  func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+    // Verifica si el texto del searchBar no está vacío.
+    if !searchBar.text!.isEmpty {
+      // Desactiva el teclado.
+      searchBar.resignFirstResponder()
 
-            // Se establece la bandera hasSearched en true para indicar que se ha realizado una búsqueda
-            hasSearched = true
-            
-            // Se limpia el array de resultados de búsqueda para realizar una nueva búsqueda
-            searchResults = []
+      // Indica que la aplicación está cargando.
+      isLoading = true
+      // Recarga la tabla para mostrar la celda de carga.
+      tableView.reloadData()
 
-            // Se construye la URL para la búsqueda utilizando el texto de búsqueda ingresado en la barra de búsqueda
-            let url = iTunesURL(searchText: searchBar.text!)
-            // Se imprime la URL construida para depuración
-            print("URL: '\(url)'")
+      // Marca que se ha realizado una búsqueda.
+      hasSearched = true
+      // Limpia los resultados de búsqueda anteriores.
+      searchResults = []
 
-            // Se realiza la solicitud al servidor de iTunes con la URL construida y se obtiene la respuesta de datos
-            if let data = performStoreRequest(with: url) {
-                // Si se obtienen datos de la solicitud, se parsean para obtener los resultados de búsqueda
-                searchResults = parse(data: data)
-                // Se ordenan los resultados de búsqueda en orden alfabético
-                searchResults.sort(by: <)
-            }
-            
-            // Se recarga la tabla para mostrar los nuevos resultados de búsqueda
-            tableView.reloadData()
+      // Crea una cola global para realizar la solicitud de red.
+      let queue = DispatchQueue.global()
+      // Genera la URL para la búsqueda en iTunes.
+      let url = self.iTunesURL(searchText: searchBar.text!)
+      // Ejecuta la solicitud de red en segundo plano.
+      queue.async {
+        // Si se obtienen datos válidos de la solicitud, los procesa.
+        if let data = self.performStoreRequest(with: url) {
+          // Parsea los datos recibidos y actualiza los resultados de búsqueda.
+          self.searchResults = self.parse(data: data)
+          // Ordena los resultados de búsqueda.
+          self.searchResults.sort(by: <)
+
+          // Vuelve al hilo principal para actualizar la interfaz de usuario.
+          DispatchQueue.main.async {
+            // Indica que la carga ha terminado.
+            self.isLoading = false
+            // Recarga la tabla para mostrar los resultados de búsqueda.
+            self.tableView.reloadData()
+          }
+
+          return
         }
+      }
     }
+  }
+
+
 
     
     
@@ -93,61 +115,72 @@ extension SearchViewController: UISearchBarDelegate {
 
 
 // MARK: - Table View Delegate
-// Extensión del SearchViewController que adopta los protocolos UITableViewDelegate y UITableViewDataSource
 extension SearchViewController: UITableViewDelegate, UITableViewDataSource {
-    
-    // Función que devuelve el número de filas en la sección de la tabla
-    func tableView(
-        _ tableView: UITableView,
-        numberOfRowsInSection section: Int
-    ) -> Int {
-        // Verifica si aún no se ha realizado ninguna búsqueda
-        if !hasSearched {
-            return 0
-        } else if searchResults.count == 0 {
-            // Si no se encontraron resultados de búsqueda, devuelve 1 para mostrar un mensaje indicando que no se encontró nada
-            return 1
-        } else {
-            // Devuelve el número de resultados de búsqueda
-            return searchResults.count
-        }
+  func tableView(
+    _ tableView: UITableView,
+    numberOfRowsInSection section: Int
+  ) -> Int {
+    // Si está cargando, devuelve 1 para mostrar la celda de carga.
+    if isLoading {
+      return 1
+    // Si no se ha realizado una búsqueda, devuelve 0 para no mostrar filas.
+    } else if !hasSearched {
+      return 0
+    // Si se ha buscado pero no hay resultados, devuelve 1 para mostrar la celda de "Nada encontrado".
+    } else if searchResults.count == 0 {
+      return 1
+    // Si hay resultados de búsqueda, devuelve el número de resultados.
+    } else {
+      return searchResults.count
     }
+  }
     
-    
-    // Función que configura y devuelve una celda para una fila específica de la tabla
-    // Método que configura y devuelve una celda para una fila específica de la tabla
+
+    // Método del delegado de UITableView para proporcionar una celda para una fila dada.
     func tableView(
         _ tableView: UITableView,
         cellForRowAt indexPath: IndexPath
     ) -> UITableViewCell {
-        // Verifica si no hay resultados de búsqueda
-        if searchResults.count == 0 {
-            // Si no hay resultados, devuelve una celda de "Nada encontrado"
+        // Verifica si está cargando.
+        if isLoading {
+            // Obtiene una celda reutilizable con el identificador "loadingCell".
+            let cell = tableView.dequeueReusableCell(
+                withIdentifier: TableView.CellIdentifiers.loadingCell,
+                for: indexPath)
+            
+            // Encuentra el spinner (UIActivityIndicatorView) en la celda utilizando su etiqueta.
+            let spinner = cell.viewWithTag(100) as! UIActivityIndicatorView
+            // Inicia la animación del spinner.
+            spinner.startAnimating()
+            // Devuelve la celda de carga.
+            return cell
+        // Verifica si no hay resultados de búsqueda.
+        } else if searchResults.count == 0 {
+            // Obtiene una celda reutilizable con el identificador "nothingFoundCell".
             return tableView.dequeueReusableCell(
                 withIdentifier: TableView.CellIdentifiers.nothingFoundCell,
                 for: indexPath)
+        // Si hay resultados de búsqueda.
         } else {
-            // Si hay resultados de búsqueda
-            // Obtiene una celda reutilizable para SearchResultCell y la configura
+            // Obtiene una celda reutilizable con el identificador "searchResultCell".
             let cell = tableView.dequeueReusableCell(
                 withIdentifier: TableView.CellIdentifiers.searchResultCell,
                 for: indexPath) as! SearchResultCell
-            // Obtiene el resultado de búsqueda correspondiente a la fila actual
+            // Obtiene el resultado de búsqueda correspondiente a la fila actual.
             let searchResult = searchResults[indexPath.row]
-            // Configura el nombre del resultado de búsqueda en la etiqueta nameLabel de la celda
+            // Establece el nombre del resultado en la etiqueta de nombre de la celda.
             cell.nameLabel.text = searchResult.name
-            // Verifica si el artista está vacío
+            // Si el nombre del artista está vacío, muestra "Unknown".
             if searchResult.artist.isEmpty {
-                // Si el artista está vacío, muestra "Desconocido" en la etiqueta artistNameLabel
                 cell.artistNameLabel.text = "Unknown"
+            // Si no, muestra el nombre del artista y el tipo del resultado.
             } else {
-                // Si el artista no está vacío, muestra el nombre del artista y el tipo de resultado en artistNameLabel
                 cell.artistNameLabel.text = String(
                     format: "%@ (%@)",
                     searchResult.artist,
                     searchResult.type)
             }
-            // Devuelve la celda configurada
+            // Devuelve la celda del resultado de búsqueda.
             return cell
         }
     }
@@ -171,7 +204,7 @@ extension SearchViewController: UITableViewDelegate, UITableViewDataSource {
         willSelectRowAt indexPath: IndexPath
     ) -> IndexPath? {
         // Si no hay resultados de búsqueda, no se permite la selección
-        if searchResults.count == 0 {
+        if searchResults.count == 0 || isLoading{
             return nil
         } else {
             // Si hay resultados de búsqueda, permite la selección de la fila
@@ -188,7 +221,7 @@ extension SearchViewController: UITableViewDelegate, UITableViewDataSource {
         // Codifica el texto de búsqueda para asegurarse de que sea compatible con una URL
         let encodedText = searchText.addingPercentEncoding(withAllowedCharacters: CharacterSet.urlQueryAllowed)!
         // Construye la URL de búsqueda en iTunes utilizando el texto de búsqueda codificado
-        let urlString = String(format: "https://itunes.apple.com/search?term=%@", encodedText)
+        let urlString = String(format: "https://itunes.apple.com/search?term=%@&limit=200", encodedText)
         // Crea una instancia de URL a partir de la cadena de URL construida
         let url = URL(string: urlString)
         // Devuelve la URL creada
