@@ -19,6 +19,7 @@
 		4A7C80E32C223D48002C27C1 /* LoadingCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4A7C80E22C223D48002C27C1 /* LoadingCell.xib */; };
 		4ACB2F592B898EB700865C2F /* NothingFoundCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4ACB2F582B898EB700865C2F /* NothingFoundCell.xib */; };
 		4ADA4FBF2C3200EC00A23B73 /* UIImageView+DownloadImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4ADA4FBE2C3200EC00A23B73 /* UIImageView+DownloadImage.swift */; };
+		4ADA4FC12C3219FB00A23B73 /* DetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4ADA4FC02C3219FB00A23B73 /* DetailViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -36,6 +37,7 @@
 		4A7C80E22C223D48002C27C1 /* LoadingCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = LoadingCell.xib; sourceTree = "<group>"; };
 		4ACB2F582B898EB700865C2F /* NothingFoundCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = NothingFoundCell.xib; sourceTree = "<group>"; };
 		4ADA4FBE2C3200EC00A23B73 /* UIImageView+DownloadImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImageView+DownloadImage.swift"; sourceTree = "<group>"; };
+		4ADA4FC02C3219FB00A23B73 /* DetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -79,6 +81,7 @@
 				4A0FF7052B6F349700C0908F /* Assets.xcassets */,
 				4A0FF70A2B6F349700C0908F /* Info.plist */,
 				4A0FF7022B6F349500C0908F /* StoreSearch.xcdatamodeld */,
+				4ADA4FC02C3219FB00A23B73 /* DetailViewController.swift */,
 				4A0FF7102B6F3F0200C0908F /* SearchResult.swift */,
 				4ADA4FBE2C3200EC00A23B73 /* UIImageView+DownloadImage.swift */,
 			);
@@ -165,6 +168,7 @@
 				4A0FF6FC2B6F349500C0908F /* SceneDelegate.swift in Sources */,
 				4A06D1722B898B86001B2A47 /* SearchResultCell.swift in Sources */,
 				4A0FF7042B6F349500C0908F /* StoreSearch.xcdatamodeld in Sources */,
+				4ADA4FC12C3219FB00A23B73 /* DetailViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

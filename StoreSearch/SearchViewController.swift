@@ -199,9 +199,6 @@ extension SearchViewController: UITableViewDelegate, UITableViewDataSource {
     }
 
     
-    
-    
-    
     // Función que se ejecuta cuando se selecciona una fila de la tabla
     func tableView(
         _ tableView: UITableView,
@@ -209,6 +206,7 @@ extension SearchViewController: UITableViewDelegate, UITableViewDataSource {
     ) {
         // Deselecciona la fila para eliminar el resaltado
         tableView.deselectRow(at: indexPath, animated: true)
+        performSegue(withIdentifier: "ShowDetail", sender: indexPath)
     }
 
     // Función que determina si una fila específica de la tabla puede ser seleccionada
@@ -226,21 +224,55 @@ extension SearchViewController: UITableViewDelegate, UITableViewDataSource {
     }
     
     func iTunesURL(searchText: String, category: Int) -> URL {
+      // Declara una variable `kind` para almacenar el tipo de búsqueda
       let kind: String
+      
+      // Asigna el tipo de búsqueda basado en la categoría seleccionada
       switch category {
-      case 1: kind = "musicTrack"
-      case 2: kind = "software"
-      case 3: kind = "ebook"
-      default: kind = ""
+      case 1:
+        kind = "musicTrack"
+      case 2:
+        kind = "software"
+      case 3:
+        kind = "ebook"
+      default:
+        kind = ""
       }
+      
+      // Codifica el texto de búsqueda para que sea seguro para incluir en una URL
       let encodedText = searchText.addingPercentEncoding(
         withAllowedCharacters: CharacterSet.urlQueryAllowed)!
+      
+      // Construye la cadena de la URL utilizando el texto codificado y el tipo de búsqueda
       let urlString = "https://itunes.apple.com/search?" +
         "term=\(encodedText)&limit=200&entity=\(kind)"
-
+      
+      // Crea una URL a partir de la cadena de URL
       let url = URL(string: urlString)
+      
+      // Devuelve la URL
       return url!
     }
+
+    
+    // MARK: - Navigation
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+      // Comprueba si el identificador del segue es "ShowDetail".
+      if segue.identifier == "ShowDetail" {
+        // Obtiene el view controller de destino y lo convierte en un `DetailViewController`.
+        let detailViewController = segue.destination as! DetailViewController
+        
+        // Obtiene el índice de la celda seleccionada (enviada como el sender) y lo convierte en `IndexPath`.
+        let indexPath = sender as! IndexPath
+        
+        // Obtiene el resultado de la búsqueda correspondiente al índice de la celda seleccionada.
+        let searchResult = searchResults[indexPath.row]
+        
+        // Asigna el resultado de la búsqueda al `searchResult` del `DetailViewController`.
+        detailViewController.searchResult = searchResult
+      }
+    }
+
 
     // Método para analizar los datos JSON obtenidos de la solicitud y devolver un array de SearchResult
     func parse(data: Data) -> [SearchResult] {
