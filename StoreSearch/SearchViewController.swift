@@ -10,11 +10,13 @@ import UIKit
 class SearchViewController: UIViewController {
     @IBOutlet weak var searchBar: UISearchBar!
     @IBOutlet weak var tableView: UITableView!
+    @IBOutlet weak var segmentedControl: UISegmentedControl!
     
     
     var searchResults = [SearchResult]()
     var hasSearched = false
     var isLoading = false
+    var dataTask: URLSessionDataTask?
     
     // Definición de la estructura TableView
     struct TableView {
@@ -27,41 +29,58 @@ class SearchViewController: UIViewController {
         }
     }
 
-    // Configuración inicial cuando la vista carga
     override func viewDidLoad() {
-        super.viewDidLoad()
-        
-        // Ajusta la inserción de contenido de la tabla para dejar espacio para la barra de búsqueda
-        tableView.contentInset = UIEdgeInsets(top: 47, left: 0, bottom: 0, right: 0)
-        
-        // Registra el archivo de Nib (Interface Builder) para la celda SearchResultCell
-        var cellNib = UINib(nibName: TableView.CellIdentifiers.searchResultCell, bundle: nil)
-        tableView.register(cellNib, forCellReuseIdentifier: TableView.CellIdentifiers.searchResultCell)
-        
-        // Registra el archivo de Nib para la celda NothingFoundCell
-        cellNib = UINib(nibName: TableView.CellIdentifiers.nothingFoundCell, bundle: nil)
-        tableView.register(cellNib, forCellReuseIdentifier: TableView.CellIdentifiers.nothingFoundCell)
-        
-        cellNib = UINib(nibName: TableView.CellIdentifiers.loadingCell,bundle: nil)
-        tableView.register(cellNib, forCellReuseIdentifier: TableView.CellIdentifiers.loadingCell)
-         
-        // Hace que el searchBar tenga el foco para que el teclado se muestre automáticamente
-        searchBar.becomeFirstResponder()
+      super.viewDidLoad()
+      // Llama al método de la superclase para realizar cualquier configuración adicional.
+      super.viewDidLoad()
+
+      // Ajusta el contenido del tableView para que tenga un margen superior de 91 puntos.
+      tableView.contentInset = UIEdgeInsets(top: 91, left: 0, bottom: 0, right: 0)
+
+      // Crea un UINib para la celda de resultados de búsqueda usando el identificador especificado.
+      var cellNib = UINib(nibName: TableView.CellIdentifiers.searchResultCell, bundle: nil)
+      // Registra el UINib en el tableView para que pueda usarlo al crear celdas con ese identificador.
+      tableView.register(cellNib, forCellReuseIdentifier: TableView.CellIdentifiers.searchResultCell)
+
+      // Crea un UINib para la celda que se muestra cuando no se encuentran resultados.
+      cellNib = UINib(nibName: TableView.CellIdentifiers.nothingFoundCell, bundle: nil)
+      // Registra el UINib en el tableView para que pueda usarlo al crear celdas con ese identificador.
+      tableView.register(cellNib, forCellReuseIdentifier: TableView.CellIdentifiers.nothingFoundCell)
+
+      // Hace que la barra de búsqueda se convierta en el primer respondedor, mostrando el teclado al cargar la vista.
+      searchBar.becomeFirstResponder()
+
+      // Crea un UINib para la celda de carga usando el identificador especificado.
+      cellNib = UINib(nibName: TableView.CellIdentifiers.loadingCell, bundle: nil)
+      // Registra el UINib en el tableView para que pueda usarlo al crear celdas con ese identificador.
+      tableView.register(cellNib, forCellReuseIdentifier: TableView.CellIdentifiers.loadingCell)
+    }
+
+    
+    
+    @IBAction func segmentChanged(_ sender: UISegmentedControl) {
+        print("Segment changed: \(sender.selectedSegmentIndex)")
     }
 
 }
 
-// MARK: - Search Bar Delegate
 
-// MARK: - Search Bar Delegate
-// Extensión para SearchViewController que implementa el delegado de UISearchBar.
 extension SearchViewController: UISearchBarDelegate {
-  // Método que se llama cuando se hace clic en el botón de búsqueda del UISearchBar.
+  
+  // Método delegado llamado cuando se presiona el botón de búsqueda en la barra de búsqueda.
   func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+    performSearch()
+  }
+  
+  // Método que realiza la búsqueda.
+  func performSearch() {
     // Verifica si el texto del searchBar no está vacío.
     if !searchBar.text!.isEmpty {
       // Desactiva el teclado.
       searchBar.resignFirstResponder()
+
+      // Cancela cualquier tarea de datos en curso.
+      dataTask?.cancel()
 
       // Indica que la aplicación está cargando.
       isLoading = true
@@ -73,46 +92,51 @@ extension SearchViewController: UISearchBarDelegate {
       // Limpia los resultados de búsqueda anteriores.
       searchResults = []
 
-      // Crea una cola global para realizar la solicitud de red.
-      let queue = DispatchQueue.global()
-      // Genera la URL para la búsqueda en iTunes.
-      let url = self.iTunesURL(searchText: searchBar.text!)
-      // Ejecuta la solicitud de red en segundo plano.
-      queue.async {
-        // Si se obtienen datos válidos de la solicitud, los procesa.
-        if let data = self.performStoreRequest(with: url) {
-          // Parsea los datos recibidos y actualiza los resultados de búsqueda.
-          self.searchResults = self.parse(data: data)
-          // Ordena los resultados de búsqueda.
-          self.searchResults.sort(by: <)
-
-          // Vuelve al hilo principal para actualizar la interfaz de usuario.
-          DispatchQueue.main.async {
-            // Indica que la carga ha terminado.
-            self.isLoading = false
-            // Recarga la tabla para mostrar los resultados de búsqueda.
-            self.tableView.reloadData()
+      // Crea la URL para la búsqueda en iTunes con el texto de búsqueda y la categoría seleccionada.
+      let url = iTunesURL(searchText: searchBar.text!, category: segmentedControl.selectedSegmentIndex)
+      // Crea una sesión compartida de URL.
+      let session = URLSession.shared
+      // Crea una tarea de datos para la URL.
+      dataTask = session.dataTask(with: url) { data, response, error in
+        // Verifica si hubo un error y si el error es de cancelación (-999).
+        if let error = error as NSError?, error.code == -999 {
+          return // La búsqueda fue cancelada.
+        } else if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
+          // Verifica si la respuesta HTTP es válida (código 200).
+          if let data = data {
+            // Parsea los datos recibidos.
+            self.searchResults = self.parse(data: data)
+            // Ordena los resultados de búsqueda.
+            self.searchResults.sort(by: <)
+            // Actualiza la interfaz en el hilo principal.
+            DispatchQueue.main.async {
+              self.isLoading = false
+              self.tableView.reloadData()
+            }
+            return
           }
-
-          return
+        } else {
+          print("Failure! \(response!)")
+        }
+        // En caso de error, actualiza la interfaz en el hilo principal.
+        DispatchQueue.main.async {
+          self.hasSearched = false
+          self.isLoading = false
+          self.tableView.reloadData()
+          self.showNetworkError()
         }
       }
+      // Inicia la tarea de datos.
+      dataTask?.resume()
     }
   }
+}
 
-
-
-    
-    
     // Devuelve la posición de la barra en la interfaz de usuario
     func position(for bar: UIBarPositioning) -> UIBarPosition {
         // Devuelve la posición de la barra como "topAttached" para adjuntarla en la parte superior
         return .topAttached
     }
-
-}
-
-
 
 // MARK: - Table View Delegate
 extension SearchViewController: UITableViewDelegate, UITableViewDataSource {
@@ -169,18 +193,7 @@ extension SearchViewController: UITableViewDelegate, UITableViewDataSource {
             // Obtiene el resultado de búsqueda correspondiente a la fila actual.
             let searchResult = searchResults[indexPath.row]
             // Establece el nombre del resultado en la etiqueta de nombre de la celda.
-            cell.nameLabel.text = searchResult.name
-            // Si el nombre del artista está vacío, muestra "Unknown".
-            if searchResult.artist.isEmpty {
-                cell.artistNameLabel.text = "Unknown"
-            // Si no, muestra el nombre del artista y el tipo del resultado.
-            } else {
-                cell.artistNameLabel.text = String(
-                    format: "%@ (%@)",
-                    searchResult.artist,
-                    searchResult.type)
-            }
-            // Devuelve la celda del resultado de búsqueda.
+            cell.configure(for: searchResult)
             return cell
         }
     }
@@ -212,38 +225,23 @@ extension SearchViewController: UITableViewDelegate, UITableViewDataSource {
         }
     }
     
-    
-    
-    
-    // MARK: - Helper Methods
-    // Método para construir y devolver la URL de búsqueda en iTunes
-    func iTunesURL(searchText: String) -> URL {
-        // Codifica el texto de búsqueda para asegurarse de que sea compatible con una URL
-        let encodedText = searchText.addingPercentEncoding(withAllowedCharacters: CharacterSet.urlQueryAllowed)!
-        // Construye la URL de búsqueda en iTunes utilizando el texto de búsqueda codificado
-        let urlString = String(format: "https://itunes.apple.com/search?term=%@&limit=200", encodedText)
-        // Crea una instancia de URL a partir de la cadena de URL construida
-        let url = URL(string: urlString)
-        // Devuelve la URL creada
-        return url!
+    func iTunesURL(searchText: String, category: Int) -> URL {
+      let kind: String
+      switch category {
+      case 1: kind = "musicTrack"
+      case 2: kind = "software"
+      case 3: kind = "ebook"
+      default: kind = ""
+      }
+      let encodedText = searchText.addingPercentEncoding(
+        withAllowedCharacters: CharacterSet.urlQueryAllowed)!
+      let urlString = "https://itunes.apple.com/search?" +
+        "term=\(encodedText)&limit=200&entity=\(kind)"
+
+      let url = URL(string: urlString)
+      return url!
     }
 
-    
-    // Método para realizar una solicitud al servidor de iTunes y devolver los datos obtenidos
-    func performStoreRequest(with url: URL) -> Data? {
-        do {
-            // Intenta obtener los datos de la URL proporcionada
-            return try Data(contentsOf: url)
-        } catch {
-            // Si se produce un error al obtener los datos, imprime el error y muestra un mensaje de error en la red
-            print("Download Error: \(error.localizedDescription)")
-            showNetworkError()
-            // Devuelve nil indicando que no se pudieron obtener los datos
-            return nil
-        }
-    }
-
-    
     // Método para analizar los datos JSON obtenidos de la solicitud y devolver un array de SearchResult
     func parse(data: Data) -> [SearchResult] {
         do {

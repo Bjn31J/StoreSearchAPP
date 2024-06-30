@@ -14,6 +14,9 @@ class SearchResultCell: UITableViewCell {
     @IBOutlet weak var artistNameLabel: UILabel!
     @IBOutlet weak var artworkImageView: UIImageView!
     
+    var downloadTask: URLSessionDownloadTask?
+
+    
     // Función llamada cuando la celda se carga desde el archivo de interfaz
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -31,5 +34,42 @@ class SearchResultCell: UITableViewCell {
         super.setSelected(selected, animated: animated)
         // Aquí puedes realizar cualquier configuración adicional de la celda para el estado seleccionado
     }
+    
+    override func prepareForReuse() {
+      // Llama al método de la superclase para asegurarse de que cualquier preparación adicional se realice
+      super.prepareForReuse()
+      
+      // Cancela la tarea de descarga en curso, si existe
+      downloadTask?.cancel()
+      
+      // Establece la tarea de descarga en nil para indicar que no hay ninguna descarga en curso
+      downloadTask = nil
+    }
+
+    
+    // MARK: - Helper Methods
+    func configure(for result: SearchResult) {
+      // Asigna el nombre del resultado al texto del `nameLabel`
+      nameLabel.text = result.name
+
+      // Verifica si el nombre del artista está vacío
+      if result.artist.isEmpty {
+        // Si está vacío, asigna "Unknown" al `artistNameLabel`
+        artistNameLabel.text = "Unknown"
+      } else {
+        // Si no está vacío, asigna el nombre del artista y el tipo al `artistNameLabel`
+        artistNameLabel.text = String(format: "%@ (%@)", result.artist, result.type)
+      }
+
+      // Asigna una imagen por defecto al `artworkImageView`
+      artworkImageView.image = UIImage(systemName: "square")
+      
+      // Verifica si la URL de la imagen pequeña es válida
+      if let smallURL = URL(string: result.imageSmall) {
+        // Si es válida, inicia la descarga de la imagen
+        downloadTask = artworkImageView.loadImage(url: smallURL)
+      }
+    }
+
 }
 
