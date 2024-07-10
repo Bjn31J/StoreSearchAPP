@@ -13,10 +13,13 @@ class SearchViewController: UIViewController {
     @IBOutlet weak var segmentedControl: UISegmentedControl!
     
     
+    
     var searchResults = [SearchResult]()
     var hasSearched = false
     var isLoading = false
     var dataTask: URLSessionDataTask?
+    var landscapeVC: LandscapeViewController?
+
     
     // Definición de la estructura TableView
     struct TableView {
@@ -55,6 +58,34 @@ class SearchViewController: UIViewController {
       // Registra el UINib en el tableView para que pueda usarlo al crear celdas con ese identificador.
       tableView.register(cellNib, forCellReuseIdentifier: TableView.CellIdentifiers.loadingCell)
     }
+    
+    // Método que se llama antes de que el controlador de vista comience una transición de rasgos
+    override func willTransition(
+      // Parámetro 'newCollection' proporciona la nueva colección de rasgos
+      to newCollection: UITraitCollection,
+      // Parámetro 'coordinator' proporciona el coordinador de transición
+      with coordinator: UIViewControllerTransitionCoordinator
+    ) {
+      // Llama al método de la clase base
+      super.willTransition(to: newCollection, with: coordinator)
+
+      // Switch basado en la nueva clase de tamaño vertical
+      switch newCollection.verticalSizeClass {
+      // Caso para tamaño compacto (por ejemplo, orientación horizontal en algunos dispositivos)
+      case .compact:
+        // Muestra el controlador de paisaje con el coordinador de transición
+        showLandscape(with: coordinator)
+      // Caso para tamaño regular o no especificado
+      case .regular, .unspecified:
+        // Oculta el controlador de paisaje con el coordinador de transición
+        hideLandscape(with: coordinator)
+      // Caso para manejar cualquier nuevo valor de tamaño de clase que no se conoce en el momento de la compilación
+      @unknown default:
+        // No hace nada
+        break
+      }
+    }
+
 
     
     
@@ -130,6 +161,77 @@ extension SearchViewController: UISearchBarDelegate {
       dataTask?.resume()
     }
   }
+    
+    // Método para mostrar el view controller en modo paisaje con un coordinador de transición
+    func showLandscape(with coordinator: UIViewControllerTransitionCoordinator) {
+      // Verifica si landscapeVC es nil, si no lo es, retorna sin hacer nada
+      guard landscapeVC == nil else { return }
+      
+      // Instancia LandscapeViewController desde el storyboard y lo asigna a landscapeVC
+      landscapeVC = storyboard!.instantiateViewController(
+        withIdentifier: "LandscapeViewController") as? LandscapeViewController
+      
+      // Si la instancia de landscapeVC es exitosa
+      if let controller = landscapeVC {
+        // Asigna los resultados de búsqueda al controlador de paisaje
+        controller.searchResults = searchResults
+        // Establece el marco de la vista del controlador para que coincida con los límites de la vista principal
+        controller.view.frame = view.bounds
+        // Establece la transparencia de la vista del controlador a 0 (invisible)
+        controller.view.alpha = 0
+        // Añade la vista del controlador a la vista principal
+        view.addSubview(controller.view)
+        // Añade el controlador como hijo del view controller principal
+        addChild(controller)
+        
+        // Anima la transición usando el coordinador de transición
+        coordinator.animate(
+          // Animaciones que se ejecutan junto con la transición
+          alongsideTransition: { _ in
+            // Establece la transparencia de la vista del controlador a 1 (visible)
+            controller.view.alpha = 1
+            // Desactiva el enfoque del searchBar
+            self.searchBar.resignFirstResponder()
+            // Si hay un view controller presentado, lo descarta de manera animada
+            if self.presentedViewController != nil {
+              self.dismiss(animated: true, completion: nil)
+            }
+          },
+          // Bloque de código que se ejecuta al completar la transición
+          completion: { _ in
+            // Informa al controlador de que se ha movido al view controller padre
+            controller.didMove(toParent: self)
+          }
+        )
+      }
+    }
+
+    // Método para ocultar el view controller en modo paisaje con un coordinador de transición
+    func hideLandscape(with coordinator: UIViewControllerTransitionCoordinator) {
+      // Comprueba si landscapeVC no es nil
+      if let controller = landscapeVC {
+        // Informa al controlador de que se moverá fuera del view controller padre
+        controller.willMove(toParent: nil)
+        // Anima la transición usando el coordinador de transición
+        coordinator.animate(
+          // Animaciones que se ejecutan junto con la transición
+          alongsideTransition: { _ in
+            // Establece la transparencia de la vista del controlador a 0 (oculto)
+            controller.view.alpha = 0
+          },
+          // Bloque de código que se ejecuta al completar la transición
+          completion: { _ in
+            // Elimina la vista del controlador de su supervista
+            controller.view.removeFromSuperview()
+            // Elimina el controlador del view controller padre
+            controller.removeFromParent()
+            // Establece landscapeVC a nil
+            self.landscapeVC = nil
+          }
+        )
+      }
+    }
+
 }
 
     // Devuelve la posición de la barra en la interfaz de usuario
@@ -307,6 +409,5 @@ extension SearchViewController: UITableViewDelegate, UITableViewDataSource {
         // Presenta el UIAlertController para mostrar el mensaje de error al usuario
         present(alert, animated: true, completion: nil)
     }
-
     
 }

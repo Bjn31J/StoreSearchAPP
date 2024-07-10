@@ -19,6 +19,8 @@
 		4A4C52982C3F3BFF0088F187 /* GradientView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A4C52972C3F3BFF0088F187 /* GradientView.swift */; };
 		4A4C529A2C3F3CF90088F187 /* BounceAnimationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A4C52992C3F3CF90088F187 /* BounceAnimationController.swift */; };
 		4A4C529C2C3F3E030088F187 /* SlideOutAnimationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A4C529B2C3F3E030088F187 /* SlideOutAnimationController.swift */; };
+		4A4C529E2C3F41C30088F187 /* LandscapeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A4C529D2C3F41C30088F187 /* LandscapeViewController.swift */; };
+		4A4C52A02C3F44CA0088F187 /* FadeOutAnimationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A4C529F2C3F44CA0088F187 /* FadeOutAnimationController.swift */; };
 		4A7C80E32C223D48002C27C1 /* LoadingCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4A7C80E22C223D48002C27C1 /* LoadingCell.xib */; };
 		4ACB2F592B898EB700865C2F /* NothingFoundCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4ACB2F582B898EB700865C2F /* NothingFoundCell.xib */; };
 		4ADA4FBF2C3200EC00A23B73 /* UIImageView+DownloadImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4ADA4FBE2C3200EC00A23B73 /* UIImageView+DownloadImage.swift */; };
@@ -40,6 +42,8 @@
 		4A4C52972C3F3BFF0088F187 /* GradientView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradientView.swift; sourceTree = "<group>"; };
 		4A4C52992C3F3CF90088F187 /* BounceAnimationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BounceAnimationController.swift; sourceTree = "<group>"; };
 		4A4C529B2C3F3E030088F187 /* SlideOutAnimationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlideOutAnimationController.swift; sourceTree = "<group>"; };
+		4A4C529D2C3F41C30088F187 /* LandscapeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LandscapeViewController.swift; sourceTree = "<group>"; };
+		4A4C529F2C3F44CA0088F187 /* FadeOutAnimationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FadeOutAnimationController.swift; sourceTree = "<group>"; };
 		4A7C80E22C223D48002C27C1 /* LoadingCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = LoadingCell.xib; sourceTree = "<group>"; };
 		4ACB2F582B898EB700865C2F /* NothingFoundCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = NothingFoundCell.xib; sourceTree = "<group>"; };
 		4ADA4FBE2C3200EC00A23B73 /* UIImageView+DownloadImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImageView+DownloadImage.swift"; sourceTree = "<group>"; };
@@ -76,6 +80,7 @@
 		4A0FF6F82B6F349500C0908F /* StoreSearch */ = {
 			isa = PBXGroup;
 			children = (
+				4A4C529D2C3F41C30088F187 /* LandscapeViewController.swift */,
 				4A0FF6F92B6F349500C0908F /* AppDelegate.swift */,
 				4A0FF6FB2B6F349500C0908F /* SceneDelegate.swift */,
 				4A0FF6FD2B6F349500C0908F /* SearchViewController.swift */,
@@ -93,6 +98,7 @@
 				4A4C52972C3F3BFF0088F187 /* GradientView.swift */,
 				4A4C52992C3F3CF90088F187 /* BounceAnimationController.swift */,
 				4A4C529B2C3F3E030088F187 /* SlideOutAnimationController.swift */,
+				4A4C529F2C3F44CA0088F187 /* FadeOutAnimationController.swift */,
 			);
 			path = StoreSearch;
 			sourceTree = "<group>";
@@ -179,7 +185,9 @@
 				4A06D1722B898B86001B2A47 /* SearchResultCell.swift in Sources */,
 				4A0FF7042B6F349500C0908F /* StoreSearch.xcdatamodeld in Sources */,
 				4A4C529C2C3F3E030088F187 /* SlideOutAnimationController.swift in Sources */,
+				4A4C52A02C3F44CA0088F187 /* FadeOutAnimationController.swift in Sources */,
 				4ADA4FC12C3219FB00A23B73 /* DetailViewController.swift in Sources */,
+				4A4C529E2C3F41C30088F187 /* LandscapeViewController.swift in Sources */,
 				4A4C52982C3F3BFF0088F187 /* GradientView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

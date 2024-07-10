@@ -19,6 +19,13 @@ class DetailViewController: UIViewController {
   @IBOutlet weak var priceButton: UIButton!
 
   var downloadTask: URLSessionDownloadTask?
+    
+  enum AnimationStyle {
+      case slide
+      case fade
+  }
+
+  var dismissStyle = AnimationStyle.fade
 
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -69,6 +76,7 @@ class DetailViewController: UIViewController {
   // MARK: - Actions
   
   @IBAction func close() {
+    dismissStyle = .slide
     // Cierra la vista emergente.
     dismiss(animated: true, completion: nil)
   }
@@ -122,41 +130,46 @@ class DetailViewController: UIViewController {
   }
 }
 
-// Extensión para manejar el reconocimiento de gestos.
+// Extensión de DetailViewController que adopta el protocolo UIGestureRecognizerDelegate
 extension DetailViewController: UIGestureRecognizerDelegate {
+  
+  // Método que determina si un gesto debe recibir un toque específico
   func gestureRecognizer(
     _ gestureRecognizer: UIGestureRecognizer,
     shouldReceive touch: UITouch
   ) -> Bool {
-    // Permite que el gesto se reconozca solo si se toca fuera de la vista emergente.
+    // Retorna true si la vista tocada es igual a la vista del controlador
     return (touch.view === self.view)
   }
 }
 
 // Extensión de DetailViewController que adopta el protocolo UIViewControllerTransitioningDelegate
 extension DetailViewController: UIViewControllerTransitioningDelegate {
+  
+  // Método para obtener el controlador de animación al presentar un view controller
+  func animationController(
+    forPresented presented: UIViewController,
+    presenting: UIViewController,
+    source: UIViewController
+  ) -> UIViewControllerAnimatedTransitioning? {
+    // Retorna una instancia de BounceAnimationController para la animación de presentación
+    return BounceAnimationController()
+  }
 
-    // Método para proporcionar el controlador de animación para una presentación
-    func animationController(
-        // Parámetro 'presented' es el view controller que se va a presentar
-        forPresented presented: UIViewController,
-        // Parámetro 'presenting' es el view controller que está realizando la presentación
-        presenting: UIViewController,
-        // Parámetro 'source' es el view controller original que inicia la transición
-        source: UIViewController
-    ) -> UIViewControllerAnimatedTransitioning? {
-        // Retorna una instancia de BounceAnimationController para manejar la animación de presentación
-        return BounceAnimationController()
+  // Método para obtener el controlador de animación al descartar un view controller
+  func animationController(
+    forDismissed dismissed: UIViewController
+  ) -> UIViewControllerAnimatedTransitioning? {
+    // Switch basado en el estilo de descarte configurado en dismissStyle
+    switch dismissStyle {
+      // Caso para estilo de descarte slide
+      case .slide:
+        // Retorna una instancia de SlideOutAnimationController
+        return SlideOutAnimationController()
+      // Caso para estilo de descarte fade
+      case .fade:
+        // Retorna una instancia de FadeOutAnimationController
+        return FadeOutAnimationController()
     }
+  }
 }
-
-// Método para proporcionar el controlador de animación para una despedida (dismissal)
-func animationController(
-  // Parámetro 'dismissed' es el view controller que se está descartando
-  forDismissed dismissed: UIViewController
-) -> UIViewControllerAnimatedTransitioning? {
-  // Retorna una instancia de SlideOutAnimationController para manejar la animación de despedida
-  return SlideOutAnimationController()
-}
-
-
