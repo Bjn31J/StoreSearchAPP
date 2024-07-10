@@ -43,6 +43,12 @@ class DetailViewController: UIViewController {
     if searchResult != nil {
       updateUI()
     }
+      // Gradient view
+      view.backgroundColor = UIColor.clear
+      let dimmingView = GradientView(frame: CGRect.zero)
+      dimmingView.frame = view.bounds
+      view.insertSubview(dimmingView, at: 0)
+      
   }
 
   deinit {
@@ -50,6 +56,15 @@ class DetailViewController: UIViewController {
     // Cancela cualquier tarea de descarga pendiente.
     downloadTask?.cancel()
   }
+    
+    // Inicializador requerido con un decodificador (aDecoder)
+    required init?(coder aDecoder: NSCoder) {
+        // Llama al inicializador de la clase base (UIViewController)
+        super.init(coder: aDecoder)
+        // Establece el delegado de transición a la propia instancia
+        transitioningDelegate = self
+    }
+
   
   // MARK: - Actions
   
@@ -117,3 +132,31 @@ extension DetailViewController: UIGestureRecognizerDelegate {
     return (touch.view === self.view)
   }
 }
+
+// Extensión de DetailViewController que adopta el protocolo UIViewControllerTransitioningDelegate
+extension DetailViewController: UIViewControllerTransitioningDelegate {
+
+    // Método para proporcionar el controlador de animación para una presentación
+    func animationController(
+        // Parámetro 'presented' es el view controller que se va a presentar
+        forPresented presented: UIViewController,
+        // Parámetro 'presenting' es el view controller que está realizando la presentación
+        presenting: UIViewController,
+        // Parámetro 'source' es el view controller original que inicia la transición
+        source: UIViewController
+    ) -> UIViewControllerAnimatedTransitioning? {
+        // Retorna una instancia de BounceAnimationController para manejar la animación de presentación
+        return BounceAnimationController()
+    }
+}
+
+// Método para proporcionar el controlador de animación para una despedida (dismissal)
+func animationController(
+  // Parámetro 'dismissed' es el view controller que se está descartando
+  forDismissed dismissed: UIViewController
+) -> UIViewControllerAnimatedTransitioning? {
+  // Retorna una instancia de SlideOutAnimationController para manejar la animación de despedida
+  return SlideOutAnimationController()
+}
+
+
